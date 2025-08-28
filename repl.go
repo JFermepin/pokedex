@@ -5,17 +5,19 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
+
+	"github.com/Jfermepin/pokedex/internal/pokecache"
 )
 
 func startRepl() {
 
-	var configuration config = config{
+	var cfg *config = &config{
 		next:     "https://pokeapi.co/api/v2/location-area/",
 		previous: "",
 		page:     0,
+		cache:    pokecache.NewCache(5 * time.Second),
 	}
-
-	var configPointer *config = &configuration
 
 	scanner := bufio.NewScanner(os.Stdin)
 	for {
@@ -28,7 +30,7 @@ func startRepl() {
 		commandName := input[0]
 		command, exists := getCommands()[commandName]
 		if exists {
-			err := command.callback(configPointer)
+			err := command.callback(cfg)
 			if err != nil {
 				fmt.Println(err)
 			}

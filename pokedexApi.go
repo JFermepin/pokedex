@@ -16,10 +16,19 @@ type PokeApiResponse struct {
 	} `json:"results"`
 }
 
-func getApiResponse(url string) (PokeApiResponse, error) {
+func getLocations(config *config) (PokeApiResponse, error) {
 	var data PokeApiResponse
 
-	response, err := http.Get(url)
+	if val, ok := config.cache.Get(config.next); ok {
+		err := json.Unmarshal(val, &data)
+		if err != nil {
+			return data, err
+		}
+
+		return data, nil
+	}
+
+	response, err := http.Get(config.next)
 	if err != nil {
 		return data, err
 	}
@@ -35,5 +44,6 @@ func getApiResponse(url string) (PokeApiResponse, error) {
 		return data, err
 	}
 
+	config.cache.Add(config.next, body)
 	return data, nil
 }

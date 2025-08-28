@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+
+	"github.com/Jfermepin/pokedex/internal/pokecache"
 )
 
 type cliCommand struct {
@@ -15,6 +17,7 @@ type config struct {
 	next     string
 	previous string
 	page     int
+	cache    *pokecache.Cache
 }
 
 func getCommands() map[string]cliCommand {
@@ -60,7 +63,7 @@ func commandHelp(config *config) error {
 
 func commandMap(config *config) error {
 
-	data, err := getApiResponse(config.next)
+	data, err := getLocations(config)
 	if err != nil {
 		return err
 	}
@@ -86,7 +89,7 @@ func commandMapb(config *config) error {
 		fmt.Println("No previous page available.")
 		return nil
 	} else {
-		data, err := getApiResponse(config.previous)
+		data, err := getLocations(config)
 		if err != nil {
 			return err
 		}
