@@ -10,14 +10,15 @@ import (
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*config) error
+	callback    func(string, *config) error
 }
 
 type config struct {
-	next     string
-	previous string
-	page     int
-	cache    *pokecache.Cache
+	next           string
+	previous       string
+	page           int
+	locationsCache *pokecache.Cache
+	pokemonsCache  *pokecache.Cache
 }
 
 func getCommands() map[string]cliCommand {
@@ -42,17 +43,22 @@ func getCommands() map[string]cliCommand {
 			description: "Displays the names of the previous 20 location areas",
 			callback:    commandMapb,
 		},
+		"explore": {
+			name:        "explore",
+			description: "Displays the names of the pokemons in the given location area",
+			callback:    commandExplore,
+		},
 	}
 	return commands
 }
 
-func commandExit(config *config) error {
+func commandExit(parameter string, config *config) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp(config *config) error {
+func commandHelp(parameter string, config *config) error {
 	commands := getCommands()
 	fmt.Print("Welcome to the Pokedex!\nUsage:\n\n")
 	for _, command := range commands {
@@ -61,7 +67,7 @@ func commandHelp(config *config) error {
 	return nil
 }
 
-func commandMap(config *config) error {
+func commandMap(parameter string, config *config) error {
 
 	data, err := getLocations(config)
 	if err != nil {
@@ -81,7 +87,7 @@ func commandMap(config *config) error {
 	return nil
 }
 
-func commandMapb(config *config) error {
+func commandMapb(parameter string, config *config) error {
 	if config.page == 1 {
 		fmt.Println("You're on the first page")
 		return nil
@@ -100,5 +106,17 @@ func commandMapb(config *config) error {
 
 		return nil
 	}
+}
 
+func commandExplore(area string, config *config) error {
+	fmt.Println("Exploring " + area + "...")
+	data, err := getPokemons(area, config)
+	if err != nil {
+		return err
+	}
+	fmt.Println("Found Pokemons:")
+	for _, encounter := range data.PokemonEncounters {
+		fmt.Println("-" + encounter.Pokemon.Name)
+	}
+	return nil
 }
