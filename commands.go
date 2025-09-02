@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
+	"math/rand/v2"
 	"os"
 
+	apistructs "github.com/Jfermepin/pokedex/internal/api-structs"
 	"github.com/Jfermepin/pokedex/internal/pokecache"
 )
 
@@ -19,6 +21,7 @@ type config struct {
 	page           int
 	locationsCache *pokecache.Cache
 	pokemonsCache  *pokecache.Cache
+	pokemonsCaught map[string]apistructs.Pokemon
 }
 
 func getCommands() map[string]cliCommand {
@@ -47,6 +50,11 @@ func getCommands() map[string]cliCommand {
 			name:        "explore",
 			description: "Displays the names of the pokemons in the given location area",
 			callback:    commandExplore,
+		},
+		"catch": {
+			name:        "catch",
+			description: "Tries to catch a pokemon. Takes the name of a Pokemon as an argument",
+			callback:    commandCatch,
 		},
 	}
 	return commands
@@ -110,7 +118,7 @@ func commandMapb(parameter string, config *config) error {
 
 func commandExplore(area string, config *config) error {
 	fmt.Println("Exploring " + area + "...")
-	data, err := getPokemons(area, config)
+	data, err := getAreaPokemons(area, config)
 	if err != nil {
 		return err
 	}
@@ -118,5 +126,24 @@ func commandExplore(area string, config *config) error {
 	for _, encounter := range data.PokemonEncounters {
 		fmt.Println("-" + encounter.Pokemon.Name)
 	}
+	return nil
+}
+
+func commandCatch(pokemon string, config *config) error {
+	fmt.Println("Throwing a Pokeball at " + pokemon + "...")
+	data, err := getPokemonInfo(pokemon, config)
+	if err != nil {
+		return err
+	}
+
+	chance := 1.0 / (1.0 + float64(data.BaseExperience)/50.0)
+
+	if rand.Float64() < chance {
+		fmt.Println(data.Name, "was caught!")
+		config.pokemonsCaught[data.Name] = data
+	} else {
+		fmt.Println(data.Name, "escaped!")
+	}
+
 	return nil
 }

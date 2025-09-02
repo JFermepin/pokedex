@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	apistructs "github.com/Jfermepin/pokedex/internal/api-structs"
 	"github.com/Jfermepin/pokedex/internal/pokecache"
 )
 
@@ -18,6 +19,7 @@ func startRepl() {
 		page:           0,
 		locationsCache: pokecache.NewCache(5 * time.Second),
 		pokemonsCache:  pokecache.NewCache(5 * time.Second),
+		pokemonsCaught: map[string]apistructs.Pokemon{},
 	}
 
 	scanner := bufio.NewScanner(os.Stdin)
