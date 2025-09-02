@@ -56,6 +56,16 @@ func getCommands() map[string]cliCommand {
 			description: "Tries to catch a pokemon. Takes the name of a Pokemon as an argument",
 			callback:    commandCatch,
 		},
+		"inspect": {
+			name:        "inspect",
+			description: "Displays the information of a caught pokemon. Takes the name of a caught Pokemon as an argument",
+			callback:    commandInspect,
+		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "Displays the names of the pokemons you have currently in your pokedex",
+			callback:    commandPokedex,
+		},
 	}
 	return commands
 }
@@ -145,5 +155,37 @@ func commandCatch(pokemon string, config *config) error {
 		fmt.Println(data.Name, "escaped!")
 	}
 
+	return nil
+}
+
+func commandInspect(pokemon string, config *config) error {
+	data, exists := config.pokemonsCaught[pokemon]
+	if !exists {
+		fmt.Println("You don't have that pokemon caught")
+		return nil
+	}
+
+	fmt.Printf("Name: %s\nHeight: %d\nWeight: %d", data.Name, data.Height, data.Weight)
+	fmt.Println("Stats:")
+	for _, s := range data.Stats {
+		fmt.Printf("- %s: %d\n", s.Stat.Name, s.BaseStat)
+	}
+	fmt.Println("Types:")
+	for _, t := range data.Types {
+		fmt.Printf("- %s\n", t.Type.Name)
+	}
+	return nil
+}
+
+func commandPokedex(parameter string, config *config) error {
+	if len(config.pokemonsCaught) == 0 {
+		fmt.Println("You haven't caught any pokemons yet.")
+		return nil
+	}
+
+	fmt.Println("Pokemons in your Pokedex:")
+	for name := range config.pokemonsCaught {
+		fmt.Println("- " + name)
+	}
 	return nil
 }
